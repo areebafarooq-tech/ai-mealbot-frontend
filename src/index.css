@@ -1,0 +1,14 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #fff5e6;
+}
+.app {
+  text-align: center;
+  padding: 20px;
+}
+.header {
+  font-size: 28px;
+  color: #e65100;
+  margin-bottom: 20px;
+}
