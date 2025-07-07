@@ -6,19 +6,26 @@ function Chatbot() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Initial welcome
   useEffect(() => {
-    const welcomeMessage = {
-      role: "bot",
-      content: "👋 Hey! I'm Milo. How can I help you today?",
-      source: "bot"
-    };
-    setMessages([welcomeMessage]);
+    setMessages([
+      {
+        role: "bot",
+        content: "👋 Hey! I’m Mealo. Craving something? Ask away!",
+        source: "bot"
+      }
+    ]);
   }, []);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
 
-    const userMessage = { role: "user", content: input, source: "user" };
+    const userMessage = {
+      role: "user",
+      content: input,
+      source: "user"
+    };
+
     setMessages(prev => [...prev, userMessage]);
     setLoading(true);
 
@@ -26,14 +33,17 @@ function Chatbot() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input }),
+        body: JSON.stringify({
+          message: input,
+          history: messages.slice(-3) // last 3 messages
+        }),
       });
 
       const data = await res.json();
 
       const botMessage = {
         role: "bot",
-        content: data.answer || "⚠️ No response from AI.",
+        content: data.answer || "⚠️ No response.",
         source: data.source || "bot",
       };
 
@@ -58,7 +68,6 @@ function Chatbot() {
             {msg.content}
           </div>
         ))}
-
         {loading && (
           <div className="typing-indicator">
             <span></span><span></span><span></span>
@@ -71,7 +80,7 @@ function Chatbot() {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask something like 'I’m happy' or 'Recommend biryani'"
+          placeholder="Ask Mealo about food, mood, or orders..."
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
         <button onClick={sendMessage}>Send</button>
