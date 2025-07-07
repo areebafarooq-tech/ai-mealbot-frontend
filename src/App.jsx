@@ -1,5 +1,7 @@
-import React from 'react';
-import Chatbot from './components/Chatbot';
+import React from "react";
+import Chatbot from "./components/Chatbot";
+import "./App.css";
+import "./styles/chatbot.css";
 
 function App() {
   return (
@@ -11,6 +13,8 @@ function App() {
 }
 
 export default App;
+
+
 
 
 

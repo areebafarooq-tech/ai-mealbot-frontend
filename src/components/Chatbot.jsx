@@ -1,59 +1,83 @@
-import React, { useState } from "react";
-import { foodData } from "../data/dummyData";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
 import "../styles/chatbot.css";
 
-const Chatbot = () => {
+function Chatbot() {
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [chat, setChat] = useState([
-    { role: "bot", content: "Hello! I’m your AI food assistant. How can I help you today?" },
-  ]);
+  const [loading, setLoading] = useState(false);
 
-  const handleSend = async () => {
+  useEffect(() => {
+    const welcomeMessage = {
+      role: "bot",
+      content: "👋 Hey! I'm Milo. How can I help you today?",
+      source: "bot"
+    };
+    setMessages([welcomeMessage]);
+  }, []);
+
+  const sendMessage = async () => {
     if (!input.trim()) return;
 
-    const newChat = [...chat, { role: "user", content: input }];
-    setChat(newChat);
-    setInput("");
+    const userMessage = { role: "user", content: input, source: "user" };
+    setMessages(prev => [...prev, userMessage]);
+    setLoading(true);
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/chat",
-        { messages: newChat }
-      );
-      const botMessage = response.data.choices[0].message.content;
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: input }),
+      });
 
-      setChat((prev) => [...prev, { role: "bot", content: botMessage }]);
+      const data = await res.json();
+
+      const botMessage = {
+        role: "bot",
+        content: data.answer || "⚠️ No response from AI.",
+        source: data.source || "bot",
+      };
+
+      setMessages(prev => [...prev, botMessage]);
     } catch (err) {
-      console.error("API error:", err.response ? err.response.data : err.message);
-      setChat((prev) => [
+      console.error("Fetch error:", err);
+      setMessages(prev => [
         ...prev,
-        { role: "bot", content: "Error fetching response ❌" },
+        { role: "bot", content: "⚠️ Server error.", source: "error" },
       ]);
     }
+
+    setInput("");
+    setLoading(false);
   };
 
   return (
     <div className="chatbot-container">
       <div className="chat-window">
-        {chat.map((msg, idx) => (
+        {messages.map((msg, idx) => (
           <div key={idx} className={`chat-message ${msg.role}`}>
             {msg.content}
           </div>
         ))}
+
+        {loading && (
+          <div className="typing-indicator">
+            <span></span><span></span><span></span>
+          </div>
+        )}
       </div>
+
       <div className="chat-input-area">
         <input
           type="text"
           value={input}
-          placeholder="Type your message..."
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSend()}
+          placeholder="Ask something like 'I’m happy' or 'Recommend biryani'"
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
-        <button onClick={handleSend}>Send</button>
+        <button onClick={sendMessage}>Send</button>
       </div>
     </div>
   );
-};
+}
 
 export default Chatbot;
